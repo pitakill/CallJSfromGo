@@ -35,43 +35,22 @@ func main() {
 	// Array of float64 to call the Operations in JS
 	input := [2]float64{8, 7}
 
-	addition, err := i.Addition(ctx, &calculator.Request{
-		OperatorOne: input[0],
-		OperatorTwo: input[1],
-	})
-	log.Println(err)
-	if err != nil {
+	operations := map[string]func(context.Context, *calculator.Request, ...grpc.CallOption) (*calculator.Response, error){
+		"addition":       i.Addition,
+		"subtraction":    i.Subtraction,
+		"multiplication": i.Multiplication,
+		"division":       i.Division,
 	}
 
-	fmt.Printf("The addition of %s and %s results in: %s\n", green(input[0]), green(input[1]), green(addition.Result))
+	for name, operationFunc := range operations {
+		operation, err := operationFunc(ctx, &calculator.Request{
+			OperatorOne: input[0],
+			OperatorTwo: input[1],
+		})
+		if err != nil {
+			log.Println(err)
+		}
 
-	subtraction, err := i.Subtraction(ctx, &calculator.Request{
-		OperatorOne: input[0],
-		OperatorTwo: input[1],
-	})
-	if err != nil {
-		log.Println(err)
+		fmt.Printf("The %s of %s and %s results in: %s\n", green(name), green(input[0]), green(input[1]), green(operation.Result))
 	}
-
-	fmt.Printf("The subtraction of %s and %s results in: %s\n", green(input[0]), green(input[1]), green(subtraction.Result))
-
-	multiplication, err := i.Multiplication(ctx, &calculator.Request{
-		OperatorOne: input[0],
-		OperatorTwo: input[1],
-	})
-	if err != nil {
-		log.Println(err)
-	}
-
-	fmt.Printf("The multiplication of %s and %s results in: %s\n", green(input[0]), green(input[1]), green(multiplication.Result))
-
-	division, err := i.Division(ctx, &calculator.Request{
-		OperatorOne: input[0],
-		OperatorTwo: input[1],
-	})
-	if err != nil {
-		log.Println(err)
-	}
-
-	fmt.Printf("The division of %s and %s results in: %s\n", green(input[0]), green(input[1]), green(division.Result))
 }
